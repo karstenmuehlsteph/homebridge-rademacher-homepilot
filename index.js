@@ -12,6 +12,7 @@ var RademacherTemperatureSensorAccessory = require ('./accessories/RademacherTem
 var RademacherDoorSensorAccessory = require ('./accessories/RademacherDoorSensorAccessory.js');
 var RademacherThermostatAccessory = require('./accessories/RademacherThermostatAccessory.js');
 var RademacherSceneAccessory = require ('./accessories/RademacherSceneAccessory.js');
+var EnableDIDs = [1010016,1010015,1010018,1010033,1010043,1010044,1010045,1010042,1010022,1010023,1010024,1010025,1010026,1010027,1010028,1010029,1010030,1010031,1010034];
 
 module.exports = function(homebridge) {
     global.Accessory = homebridge.platformAccessory;
@@ -50,7 +51,7 @@ function RademacherHomePilot(log, config, api) {
                     body.devices.forEach(function(data) {
                         var uuid = UUIDGen.generate("did"+data.did);
                         var accessory = self.accessories[uuid];
-                        
+                    if (EnableDIDs.includes(data.did)) {
                         // blinds
                         if(["27601565","35000864","14234511","35000662","36500172","36500572_A","16234511_A","16234511_S","45059071","31500162","23602075","32000064","32000064_A"].includes(data.deviceNumber))
                         {
@@ -125,6 +126,11 @@ function RademacherHomePilot(log, config, api) {
                             self.log("Unknown product: %s", data.deviceNumber);
                             if (self.debug) self.log(data);
                         }
+		    }
+		    else {
+                            self.log("Not matching DID: %s", data.did);
+                            if (self.debug) self.log(data);
+			}
                     });
                 }
                 else
@@ -142,6 +148,8 @@ function RademacherHomePilot(log, config, api) {
                     body.meters.forEach(function(data) {
                         var uuid = UUIDGen.generate("did"+data.did);
                         var accessory = self.accessories[uuid];
+
+                    if (EnableDIDs.includes(data.did)) {
                         
                         // smoke alarm
                         if(["32001664"].includes(data.deviceNumber))
@@ -192,6 +200,11 @@ function RademacherHomePilot(log, config, api) {
                             self.log("Unknown product: %s",data.deviceNumber);
                             self.log(data);
                         }
+		    }
+		    else {
+                            self.log("Not matching DID: %s", data.did);
+                            if (self.debug) self.log(data);
+			}
                     });
                 }
                 else
