@@ -12,7 +12,6 @@ var RademacherTemperatureSensorAccessory = require ('./accessories/RademacherTem
 var RademacherDoorSensorAccessory = require ('./accessories/RademacherDoorSensorAccessory.js');
 var RademacherThermostatAccessory = require('./accessories/RademacherThermostatAccessory.js');
 var RademacherSceneAccessory = require ('./accessories/RademacherSceneAccessory.js');
-//Enter the wanted DIDs seperated by comatas, you can get the DIDs by entering no ID at all and have a lock at the Statusscreen in Homebridge 
 var EnableDIDs = [1010016,1010015,1010018,1010033,1010043,1010044,1010045,1010042,1010022,1010023,1010024,1010025,1010026,1010027,1010028,1010029,1010030,1010031,1010034];
 
 module.exports = function(homebridge) {
@@ -129,7 +128,7 @@ function RademacherHomePilot(log, config, api) {
                         }
 		    }
 		    else {
-                            self.log("Not matching DID: %s", data.did);
+                            self.log("Not matching DID for %s %s", data.name, data.did);
                             if (self.debug) self.log(data);
 			}
                     });
@@ -203,7 +202,7 @@ function RademacherHomePilot(log, config, api) {
                         }
 		    }
 		    else {
-                            self.log("Not matching DID: %s", data.did);
+                            self.log("Not matching DID for %s %s", data.name, data.did);
                             if (self.debug) self.log(data);
 			}
                     });
