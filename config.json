@@ -6,17 +6,20 @@
     "pin": "031-45-154"
   },
 
-  "description": "This is an example configuration file with one fake accessory and one fake platform. You can use this as a template for creating your own configuration file containing devices you actually own.",
+  "description": "This is an example configuration file with one fake accessory and one fake platform. You can use this as a template for creating your own configuration file containing devices you actually own. Enter under the Section "DIDs" the Devices you want to be transfered to your Homekit, you can find the DID in the Status of the Homebridge.",
 
-  "platforms": [
-    {
-      "platform": "RademacherHomePilot",
-      "name": "RademacherHomePilot",
-      "url": "http://192.168.0.1",
-      "password": "",
-      "password_hashed": "false",
-      "scenes_as_switch": "false",
-      "debug": "false"
-    }
-  ]
+{
+    "platform": "RademacherHomePilot",
+    "name": "RademacherHomePilot",
+    "url": "http://192.168.2.1",
+    "password": "",
+    "password_hashed": "false",
+    "scenes_as_switch": "false",
+    "debug": "false",
+    "DIDs": [
+        1999999,
+        1999998,
+        1999997
+    ]
+} 
 }

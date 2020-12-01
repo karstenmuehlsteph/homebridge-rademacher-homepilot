@@ -12,10 +12,6 @@ var RademacherTemperatureSensorAccessory = require ('./accessories/RademacherTem
 var RademacherDoorSensorAccessory = require ('./accessories/RademacherDoorSensorAccessory.js');
 var RademacherThermostatAccessory = require('./accessories/RademacherThermostatAccessory.js');
 var RademacherSceneAccessory = require ('./accessories/RademacherSceneAccessory.js');
-//Enter the wanted DIDs seperated by comatas, you can get the DIDs by entering no ID at all and have a lock at
-//the Statusscreen in Homebridge, there you can see the matching names and DIDs
-//With this setting nothing will work, you have to give the DIDs you want to use!
-var EnableDIDs = [9999999,9999998];
 
 module.exports = function(homebridge) {
     global.Accessory = homebridge.platformAccessory;
@@ -54,7 +50,7 @@ function RademacherHomePilot(log, config, api) {
                     body.devices.forEach(function(data) {
                         var uuid = UUIDGen.generate("did"+data.did);
                         var accessory = self.accessories[uuid];
-                    if (EnableDIDs.includes(data.did)) {
+                    if ((config["DIDs"]).includes(data.did)) {
                         // blinds
                         if(["27601565","35000864","14234511","35000662","36500172","36500572_A","16234511_A","16234511_S","45059071","31500162","23602075","32000064","32000064_A"].includes(data.deviceNumber))
                         {
@@ -152,7 +148,7 @@ function RademacherHomePilot(log, config, api) {
                         var uuid = UUIDGen.generate("did"+data.did);
                         var accessory = self.accessories[uuid];
 
-                    if (EnableDIDs.includes(data.did)) {
+                    if ((config["DIDs"]).includes(data.did)) {
                         
                         // smoke alarm
                         if(["32001664"].includes(data.deviceNumber))
