@@ -22,7 +22,8 @@ Configuration sample:
         "password_hashed": "false",
         "scenes_as_switch":"false",
         "debug": "false",
-	"DIDs": [1999999,1999998,1999997]
+	"UseDIDs": "false",
+	"DIDs": []
       }
     ]
 ```
@@ -32,11 +33,12 @@ Configuration sample:
 * `password_hashed`: password to HomePilot is alerady hashed with sha256 (if enabled in its web interface)
 * `scenes_as_switch`: if "true", all scenes are added as switch to HomeKit, otherwise scenes are not added at all 
 * `debug`: if "true", debugging is activated
-* `DIDs`: enter the Device IDs (DIDs) you want to be shown in HomeKit. You can find them in the Status Screen of HomeBridge
+* `UseDIDs`: if "true" you can choose what Devices are mirrored to HomeKit, you have to enter matching DIDs below
+* `DIDs`: enter the Device IDs (DIDs) you want to be shown in HomeKit. You can find them in the Status Screen of HomeBridge if you enable "UseDIDs" and insert at least one fake DID
+          Example: "DIDs": [1010101,1010102,1010133]
 
 # To-Do
-* Option to enable and disable the DID Feature
-* option to choos if you include or exclude the given DIDs
+* option to choose if you include or exclude the given DIDs
 
 # Community
 
