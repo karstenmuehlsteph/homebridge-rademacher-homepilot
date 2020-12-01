@@ -21,7 +21,7 @@ Configuration sample:
         "password": "",
         "password_hashed": "false",
         "scenes_as_switch":"false",
-        "debug": "false"
+        "debug": "false",
 	"DIDs": [1999999,1999998,1999997]
       }
     ]
