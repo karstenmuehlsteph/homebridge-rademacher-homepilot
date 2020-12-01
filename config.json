@@ -7,7 +7,8 @@
   },
 
   "description": "Change IP and if active insert password. If you just want all of your Rademacher devices in HomeKit just leave "DIDs" and "UseDIDs" as is.",
-
+  "platforms": [
+    {
     "platform": "RademacherHomePilot",
     "name": "RademacherHomePilot",
     "url": "http://192.168.2.1",
@@ -17,5 +18,6 @@
     "debug": "false",
     "UseDIDs": "false",
     "DIDs": []
-} 
+    } 
+  ]
 }
