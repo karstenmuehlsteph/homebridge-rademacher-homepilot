@@ -6,17 +6,18 @@
     "pin": "031-45-154"
   },
 
-  "description": "This is an example configuration file with one fake accessory and one fake platform. You can use this as a template for creating your own configuration file containing devices you actually own.",
-
+  "description": "Change IP and if active insert password. If you just want all of your Rademacher devices in HomeKit just leave "DIDs" and "UseDIDs" as is.",
   "platforms": [
     {
-      "platform": "RademacherHomePilot",
-      "name": "RademacherHomePilot",
-      "url": "http://192.168.0.1",
-      "password": "",
-      "password_hashed": "false",
-      "scenes_as_switch": "false",
-      "debug": "false"
-    }
+    "platform": "RademacherHomePilot",
+    "name": "RademacherHomePilot",
+    "url": "http://192.168.2.1",
+    "password": "",
+    "password_hashed": "false",
+    "scenes_as_switch": "false",
+    "debug": "false",
+    "did_list_usage": "none",
+    "did_list": []
+    } 
   ]
 }

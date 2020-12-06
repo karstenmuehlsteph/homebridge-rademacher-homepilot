@@ -22,6 +22,32 @@ module.exports = function(homebridge) {
     homebridge.registerPlatform("homebridge-rademacher-homepilot", "RademacherHomePilot", RademacherHomePilot, true);
 };
 
+// exclude/include dids
+function did_filter(log, config,data)
+{
+    this.debug = (config["debug"] == "true"); 
+    if (this.debug) 
+    {
+        log("did_list_usage: "+config["did_list_usage"])
+        log("did_list: "+config["did_list"])
+        log("data.did: "+data.did)
+        log("includes: "+config["did_list"].includes(data.did))
+    }
+    if (config["did_list_usage"] && config["did_list_usage"]!="none" && config["did_list"] && config["did_list"].includes(data.did))
+    {
+        log("did filtering: "+(config["did_list_usage"]=="exclude"?"excluding":"including")+" did "+data.did)
+        if (config["did_list_usage"]=="include")
+        {
+            return data;
+        }
+    }
+    else
+    {
+        if (this.debug) log("not filtering: "+data.did)
+        return data;     
+    }
+}
+
 function RademacherHomePilot(log, config, api) {
     // global vars
     this.log = log;
@@ -47,10 +73,10 @@ function RademacherHomePilot(log, config, api) {
                 }
                 if (body.devices)
                 {
-                    body.devices.forEach(function(data) {
+                    body.devices.filter(data => did_filter(self.log,config,data)).forEach(function(data) {
                         var uuid = UUIDGen.generate("did"+data.did);
                         var accessory = self.accessories[uuid];
-                        
+                       
                         // blinds
                         if(["27601565","35000864","14234511","35000662","36500172","36500572_A","16234511_A","16234511_S","45059071","31500162","23602075","32000064","32000064_A"].includes(data.deviceNumber))
                         {
@@ -139,7 +165,7 @@ function RademacherHomePilot(log, config, api) {
                 }
                 if (body.meters)
                 {
-                    body.meters.forEach(function(data) {
+                    body.meters.filter(data => did_filter(self.log,config,data)).forEach(function(data) {
                         var uuid = UUIDGen.generate("did"+data.did);
                         var accessory = self.accessories[uuid];
                         
@@ -206,7 +232,7 @@ function RademacherHomePilot(log, config, api) {
                 }
                 if (body.scenes)
                 {
-                    body.scenes.forEach(function(data) {
+                    body.scenes.filter(data => did_filter(self.log,config,data)).forEach(function(data) {
                         if (data.isExecutable==1)
                         {
                             var uuid = UUIDGen.generate("sid"+data.sid);
@@ -462,4 +488,3 @@ RademacherHomePilot.prototype.removeAccessory = function(accessory) {
         this.api.unregisterPlatformAccessories("homebridge-rademacher-homepilot", "RademacherHomePilot", [accessory]);
     }
 };
-
