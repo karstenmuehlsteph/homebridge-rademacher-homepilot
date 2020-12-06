@@ -22,8 +22,8 @@ Configuration sample:
         "password_hashed": "false",
         "scenes_as_switch":"false",
         "debug": "false",
-	      "did_list_usage": "none",
-	      "did_list: []
+        "did_list_usage": "none",
+        "did_list: []
       }
     ]
 ```
