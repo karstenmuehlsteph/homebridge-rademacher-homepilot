@@ -22,8 +22,8 @@ Configuration sample:
         "password_hashed": "false",
         "scenes_as_switch":"false",
         "debug": "false",
-	"UseDIDs": "false",
-	"DIDs": []
+	      "did_list_usage": "none",
+	      "did_list: []
       }
     ]
 ```
@@ -33,12 +33,9 @@ Configuration sample:
 * `password_hashed`: password to HomePilot is alerady hashed with sha256 (if enabled in its web interface)
 * `scenes_as_switch`: if "true", all scenes are added as switch to HomeKit, otherwise scenes are not added at all 
 * `debug`: if "true", debugging is activated
-* `UseDIDs`: if "true" you can choose what Devices are mirrored to HomeKit, you have to enter matching DIDs below
-* `DIDs`: enter the Device IDs (DIDs) you want to be shown in HomeKit. You can find them in the Status Screen of HomeBridge if you enable "UseDIDs" and insert at least one fake DID
-          Example: "DIDs": [1010101,1010102,1010133]
-
-# To-Do
-* option to choose if you include or exclude the given DIDs
+* `did_list_usage`: if "include" you can choose what Devices are mirrored to HomeKit, you have to enter matching DIDs below, if "exclude" you can exclude a list of DIDs, default is "none"
+* `did_list`: enter the Device IDs (DIDs) you want to be shown in HomeKit. You can find them in the Status Screen of HomeBridge if you enable "did_list_usage" and insert at least one fake DID
+          Example: "did_list": [1010101,1010102,1010133]
 
 # Community
 

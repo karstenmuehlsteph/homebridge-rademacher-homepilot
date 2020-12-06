@@ -16,8 +16,8 @@
     "password_hashed": "false",
     "scenes_as_switch": "false",
     "debug": "false",
-    "UseDIDs": "false",
-    "DIDs": []
+    "did_list_usage": "none",
+    "did_list": []
     } 
   ]
 }
