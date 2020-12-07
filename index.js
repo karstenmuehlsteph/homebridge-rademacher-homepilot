@@ -26,7 +26,7 @@ module.exports = function(homebridge) {
 function did_filter(log, config,data)
 {
     this.debug = (config["debug"] == "true"); 
-    if (this.debug) 
+    if (this.debug && config["did_list_usage"] && config["did_list"]) 
     {
         log("did_list_usage: "+config["did_list_usage"])
         log("did_list: "+config["did_list"])
