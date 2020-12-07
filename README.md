@@ -34,8 +34,7 @@ Configuration sample:
 * `scenes_as_switch`: if "true", all scenes are added as switch to HomeKit, otherwise scenes are not added at all 
 * `debug`: if "true", debugging is activated
 * `did_list_usage`: if "include" you can choose what Devices are mirrored to HomeKit, you have to enter matching DIDs below, if "exclude" you can exclude a list of DIDs, default is "none"
-* `did_list`: enter the Device IDs (DIDs) you want to be shown in HomeKit. You can find them in the Status Screen of HomeBridge if you enable "did_list_usage" and insert at least one fake DID
-          Example: "did_list": [1010101,1010102,1010133]
+* `did_list`: enter the Device IDs (DIDs) you want to be shown in HomeKit. You can find them in the log file in square brackets ("[12/6/2020, 5:40:36 PM] [RademacherHomePilot] blinds are online: bodentief [10000]" => did = 10000), example list: "did_list": [10000,10001,10002]
 
 # Community
 

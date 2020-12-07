@@ -33,12 +33,31 @@ function did_filter(log, config,data)
         log("data.did: "+data.did)
         log("includes: "+config["did_list"].includes(data.did))
     }
-    if (config["did_list_usage"] && config["did_list_usage"]!="none" && config["did_list"] && config["did_list"].includes(data.did))
+    if (config["did_list_usage"] && config["did_list_usage"]!="none" && config["did_list"]) 
     {
-        log("did filtering: "+(config["did_list_usage"]=="exclude"?"excluding":"including")+" did "+data.did)
-        if (config["did_list_usage"]=="include")
+        if (config["did_list_usage"]=="include") 
         {
-            return data;
+            if (config["did_list"].includes(data.did))
+            {
+                log("did filtering: including did "+data.did)
+                return data;
+            }
+            else
+            {
+                log("did filtering: excluding (not in include list) did "+data.did)
+            }   
+        }
+        else if (config["did_list_usage"]=="exclude") 
+        {
+            if (config["did_list"].includes(data.did))
+            {
+                log("did filtering: excluding did "+data.did)
+            }
+            else
+            {
+                log("did filtering: including (not in exclude list) did "+data.did)
+                return data;
+            }              
         }
     }
     else
