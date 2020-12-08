@@ -26,43 +26,44 @@ module.exports = function(homebridge) {
 function did_filter(log, config,data)
 {
     this.debug = (config["debug"] == "true"); 
+    id=data.did?data.did:data.sid;
     if (this.debug && config["did_list_usage"] && config["did_list"]) 
     {
         log("did_list_usage: "+config["did_list_usage"])
         log("did_list: "+config["did_list"])
-        log("data.did: "+data.did)
-        log("includes: "+config["did_list"].includes(data.did))
+        log("id: "+id)
+        log("includes: "+config["did_list"].includes(id))
     }
     if (config["did_list_usage"] && config["did_list_usage"]!="none" && config["did_list"]) 
     {
         if (config["did_list_usage"]=="include") 
         {
-            if (config["did_list"].includes(data.did))
+            if (config["did_list"].includes(id))
             {
-                log("did filtering: including did "+data.did)
+                log("did filtering: including did "+id)
                 return data;
             }
             else
             {
-                log("did filtering: excluding (not in include list) did "+data.did)
+                log("did filtering: excluding (not in include list) did "+id)
             }   
         }
         else if (config["did_list_usage"]=="exclude") 
         {
-            if (config["did_list"].includes(data.did))
+            if (config["did_list"].includes(id))
             {
-                log("did filtering: excluding did "+data.did)
+                log("did filtering: excluding did "+id)
             }
             else
             {
-                log("did filtering: including (not in exclude list) did "+data.did)
+                log("did filtering: including (not in exclude list) did "+id)
                 return data;
             }              
         }
     }
     else
     {
-        if (this.debug) log("not filtering: "+data.did)
+        if (this.debug) log("not filtering: "+id)
         return data;     
     }
 }
