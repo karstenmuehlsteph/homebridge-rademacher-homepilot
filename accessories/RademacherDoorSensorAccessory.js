@@ -11,7 +11,7 @@ function RademacherDoorSensorAccessory(log, debug, accessory, sensor, session) {
 
     var contactsensorService = this.accessory.getService(global.Service.ContactSensor);
     contactsensorService.getCharacteristic(global.Characteristic.ContactSensorState)
-        .setValue(this.sensor.readings.contact_state=="open"?true:false)
+        .setValue(this.sensor.readings.contact_state=="closed"?false:true)
         .on('get', this.getCurrentDoorState.bind(this));
     this.services.push(contactsensorService);
 
@@ -42,9 +42,9 @@ RademacherDoorSensorAccessory.prototype.getCurrentDoorState = function (callback
             {
                 if (self.debug) self.log(data.readings);
                 var contact_state=data.readings.contact_state;
-                var closed=contact_state=="open";
-                if (self.debug) self.log("%s [%s] - door is open = %s", self.accessory.displayName, self.sensor.did, closed);
-                return callback(null, closed);
+                var closed=contact_state=="closed";
+                if (self.debug) self.log("%s [%s] - door is open = %s", self.accessory.displayName, self.sensor.did, !closed);
+                return callback(null, !closed);
             }
         });
     });
