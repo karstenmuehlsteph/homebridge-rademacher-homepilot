@@ -35,8 +35,8 @@ RademacherDoorSensorAccessory.prototype.getCurrentDoorState = function (callback
     var self = this;
     var did = this.did;
 
-    this.session.get("/v4/devices?devtype=Sensor", 2500, function(e, body) {
-        if(e) return callback(new Error("Request failed: "+e), false);
+    this.session.get("/v4/devices?devtype=Sensor", 5000, function(e, body) {
+        if(e) return callback(new Error("Request failed: "+e), null);
         body.meters.forEach(function(data) {
             if(data.did == did)
             {
@@ -56,8 +56,8 @@ RademacherDoorSensorAccessory.prototype.getCurrentBatteryLevel = function (callb
     var self = this;
     var did = this.did;
 
-    this.session.get("/v4/devices?devtype=Sensor", 2500, function(e, body) {
-        if(e) return callback(new Error("Request failed: "+e), false);
+    this.session.get("/v4/devices?devtype=Sensor", 5000, function(e, body) {
+        if(e) return callback(new Error("Request failed: "+e), null);
         body.meters.forEach(function(data) {
             if(data.did == did)
             {
@@ -80,17 +80,39 @@ RademacherDoorSensorAccessory.prototype.update = function() {
     var self = this;
 
     // Switch state
-    this.getCurrentDoorState(function(foo, state) {
-        if (self.debug) self.log(`%s [%s] - updating to is open = %s`, self.accessory.displayName, self.sensor.did, state);
-        var contactsensorService = self.accessory.getService(global.Service.ContactSensor);
-        contactsensorService.getCharacteristic(Characteristic.ContactSensorState).setValue(state, undefined, self.accessory.context);
+    this.getCurrentDoorState(function(err, state) {
+        if (err)
+        {
+            self.log(`%s [%s] - error getting contact state: %s`, self.accessory.displayName, self.sensor.did, err);
+        }
+        else if (state===null)
+        {
+            self.log(`%s [%s] - got null state`, self.accessory.displayName, self.sensor.did);
+        }
+        else
+        {
+            if (self.debug) self.log(`%s [%s] - updating to is open = %s`, self.accessory.displayName, self.sensor.did, state);
+            var contactsensorService = self.accessory.getService(global.Service.ContactSensor);
+            contactsensorService.getCharacteristic(Characteristic.ContactSensorState).setValue(state, undefined, self.accessory.context);    
+        }
     }.bind(this));
 
     // battery level
-    this.getCurrentBatteryLevel(function(foo, level) {
-        if (self.debug) self.log(`%s [%s] - updating battery level to %s`, self.accessory.displayName, self.sensor.did, level);
-        var batteryService = this.accessory.getService(global.Service.BatteryService);
-        batteryService.getCharacteristic(Characteristic.BatteryLevel).setValue(level, undefined, self.accessory.context);
+    this.getCurrentBatteryLevel(function(err, level) {
+        if (err)
+        {
+            self.log(`%s [%s] - error getting battery level: %s`, self.accessory.displayName, self.sensor.did, err);
+        }
+        else if (level===null)
+        {
+            self.log(`%s [%s] - got null battery level`, self.accessory.displayName, self.sensor.did);
+        }
+        else
+        {
+            if (self.debug) self.log(`%s [%s] - updating battery level to %s`, self.accessory.displayName, self.sensor.did, level);
+            var batteryService = this.accessory.getService(global.Service.BatteryService);
+            batteryService.getCharacteristic(Characteristic.BatteryLevel).setValue(level, undefined, self.accessory.context);
+        }
     }.bind(this));
 
 };

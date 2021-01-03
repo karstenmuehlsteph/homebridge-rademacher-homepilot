@@ -33,8 +33,8 @@ RademacherSunSensorAccessory.prototype.getCurrentSunState = function(callback)
     if (this.debug) this.log("%s [%s] - Getting current sun state...", this.accessory.displayName, this.sensor.did);
     var self = this;
     var did = this.did;
-    this.session.get("/v4/devices?devtype=Sensor", 2500, function (e, body) {
-        if (e) return callback(new Error("Request failed: " + e), false);
+    this.session.get("/v4/devices?devtype=Sensor", 5000, function (e, body) {
+        if (e) return callback(new Error("Request failed: " + e), null);
         body.meters.forEach(function (data) {
             if (data.did == did) {
                 var t = data.readings.sun_detected;
@@ -46,15 +46,24 @@ RademacherSunSensorAccessory.prototype.getCurrentSunState = function(callback)
 };
 
 RademacherSunSensorAccessory.prototype.updateStates = function() {
-    this.getCurrentSunState(function(foo, sun_detected) {
-        // Update LightSensor state
-        var lightSensorService = this.accessory.getService(global.Service.LightSensor);
-        lightSensorService.getCharacteristic(global.Characteristic.CurrentAmbientLightLevel)
-            .setValue(sun_detected ? 100000 : 0.0001, undefined, this.accessory.context);
-        // Update Switch state
-        var switchService = this.accessory.getService(global.Service.Switch);
-        switchService.getCharacteristic(global.Characteristic.On)
-            .setValue(sun_detected ? true : false);
+    this.getCurrentSunState(function(err, sun_detected) {
+        if (err)
+        {
+            self.log(`%s [%s] - error getting state: %s`, self.accessory.displayName, self.sensor.did, err);
+        }
+        else if (sun_detected===null)
+        {
+            self.log(`%s [%s] - got null state`, self.accessory.displayName, self.sensor.did);
+        }
+        else
+        {
+            // Update LightSensor state
+            var lightSensorService = this.accessory.getService(global.Service.LightSensor);
+            lightSensorService.getCharacteristic(global.Characteristic.CurrentAmbientLightLevel).setValue(sun_detected ? 100000 : 0.0001, undefined, this.accessory.context);
+            // Update Switch state
+            var switchService = this.accessory.getService(global.Service.Switch);
+            switchService.getCharacteristic(global.Characteristic.On).setValue(sun_detected ? true : false);
+        }
     }.bind(this));
 };
 

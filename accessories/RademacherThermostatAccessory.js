@@ -78,7 +78,7 @@ RademacherThermostatAccessory.prototype.setTargetTemperature = function(temperat
         this.targetTemperature=temperature;
 
         var params = {name: "TARGET_TEMPERATURE_CFG", value: this.targetTemperature};
-        this.session.put("/devices/"+this.thermostat.did, params, 2500, function(e) {
+        this.session.put("/devices/"+this.thermostat.did, params, 5000, function(e) {
             if(e) return callback(new Error("Request failed: "+e), self.targetTemperature);
             return callback(null, self.targetTemperature);
         });
@@ -99,16 +99,38 @@ RademacherThermostatAccessory.prototype.setTargetHeatingCoolingState = function(
 };
 
 RademacherThermostatAccessory.prototype.update = function() {
-    if (this.debug) this.log(`Updating %s [%s]`, this.accessory.displayName, this.thermostat.did);
+    if (this.debug) this.log(`%s [%s] - updating`, this.accessory.displayName, this.thermostat.did);
     var self = this;
 
     // Thermostat
-    this.getCurrentTemperature(function(foo, temp) {
-        self.service.getCharacteristic(Characteristic.CurrentTemperature).setValue(temp, undefined, self.accessory.context);
+    this.getCurrentTemperature(function(err, temp) {
+        if (err)
+        {
+            self.log(`%s [%s] - error getting temp: %s`, this.accessory.displayName, this.thermostat.did, err);
+        }
+        else if(temp===null)
+        {
+            self.log(`%s [%s] - got null temp`, this.accessory.displayName, this.thermostat.did);
+        }
+        else
+        {
+            self.service.getCharacteristic(Characteristic.CurrentTemperature).setValue(temp, undefined, self.accessory.context);
+        }
     }.bind(this));
 
-    this.getTargetTemperature(function(foo, temp) {
-        self.service.getCharacteristic(Characteristic.TargetTemperature).setValue(temp, undefined, self.accessory.context);
+    this.getTargetTemperature(function(err, temp) {
+        if (err)
+        {
+            self.log(`%s [%s] - error getting target temp: %s`, this.accessory.displayName, this.thermostat.did, err);
+        }
+        else if(temp===null)
+        {
+            self.log(`%s [%s] - got null target temp`, this.accessory.displayName, this.thermostat.did);
+        }
+        else
+        {
+            self.service.getCharacteristic(Characteristic.TargetTemperature).setValue(temp, undefined, self.accessory.context);           
+        }
     }.bind(this));
 
 };

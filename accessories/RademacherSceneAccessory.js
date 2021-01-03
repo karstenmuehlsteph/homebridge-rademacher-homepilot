@@ -50,7 +50,7 @@ RademacherSceneAccessory.prototype.setCurrentState = function(value, callback) {
     {
         var params = {request_type:"EXECUTESCENE",trigger_event:"TRIGGER_SCENE_MANUALLY_EVT"}
         this.log(`%s - [%s] executing scene`, this.accessory.displayName, this.scene.sid);
-        this.session.post("/scenes/"+this.scene.sid+"/actions", params, 2500, function (e) {
+        this.session.post("/scenes/"+this.scene.sid+"/actions", params, 5000, function (e) {
             if(e) self.log(e)
             setTimeout(self.update.bind(self), 2000);
         });
@@ -62,8 +62,19 @@ RademacherSceneAccessory.prototype.update = function() {
     var self = this;
 
     // Switch state
-    this.getCurrentState(function(foo, state) {
-        self.service.getCharacteristic(Characteristic.On).setValue(state, undefined, self.accessory.context);
+    this.getCurrentState(function(err, state) {
+        if (err)
+        {
+            self.log("error from scene %s: %s",self.scene.sid,err)
+        }
+        else if (state===null)
+        {
+            self.log("null state from scene %s",self.scene.sid)
+        }
+        else
+        {
+            self.service.getCharacteristic(Characteristic.On).setValue(state, undefined, self.accessory.context);
+        }
     }.bind(this));
 };
 

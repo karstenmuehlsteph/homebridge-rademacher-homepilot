@@ -34,7 +34,7 @@ RademacherDimmerAccessory.prototype.getStatus = function(callback) {
     var self = this;
 
     this.getDevice(function(e, d) {
-        if(e) return callback(e, false);
+        if(e) return callback(e, null);
         var pos = d.statusesMap.Position;
         callback(null, (pos>0?true:false));
     });
@@ -52,8 +52,8 @@ RademacherDimmerAccessory.prototype.setStatus = function(status, callback, conte
         if (changed)
         {            
             var params = {name: this.lastState?"TURN_OFF_CMD":"TURN_ON_CMD"};
-            this.session.put("/devices/"+this.dimmer.did, params, 2500, function(e) {
-                if(e) return callback(new Error("Request failed: "+e), false);
+            this.session.put("/devices/"+this.dimmer.did, params, 5000, function(e) {
+                if(e) return callback(new Error("Request failed: "+e), null);
                 self.lastState = self.currentState;
                 callback(null, self.currentState);
             });
@@ -70,7 +70,7 @@ RademacherDimmerAccessory.prototype.getBrightness = function(callback) {
 
     var self = this;
     this.getDevice(function(e, d) {
-        if(e) return callback(e, false);
+        if(e) return callback(e, null);
         var pos = d.statusesMap.Position;
         callback(null, pos);
     });
@@ -83,25 +83,47 @@ RademacherDimmerAccessory.prototype.setBrightness = function(brightness, callbac
         this.currentBrightness = brightness;
         this.service.setCharacteristic(Characteristic.Brightness,brightness);
         var params = {name: "GOTO_POS_CMD", value: brightness};
-        this.session.put("/devices/"+this.dimmer.did, params, 2500, function(e) {
-            if(e) return callback(new Error("Request failed: "+e), false);
+        this.session.put("/devices/"+this.dimmer.did, params, 5000, function(e) {
+            if(e) return callback(new Error("Request failed: "+e), null);
             callback(null, self.currentBrightness);
         });
 }
 };
 
 RademacherDimmerAccessory.prototype.update = function() {
-    if (this.debug) this.log(`Updating %s [%s]`, this.accessory.displayName, this.dimmer.did);
+    if (this.debug) this.log(`%s [%s] - updating`, this.accessory.displayName, this.dimmer.did);
     var self = this;
 
     // Status
-    this.getStatus(function(foo, state) {
-        self.service.getCharacteristic(Characteristic.On).setValue(state, undefined, self.accessory.context);
+    this.getStatus(function(err, state) {
+        if (err)
+        {
+            self.log(`%s [%s] error getting state: %s`, this.accessory.displayName, this.dimmer.did,err);
+        }
+        else if (state===null)
+        {
+            self.log(`%s [%s] got null state`, this.accessory.displayName, this.dimmer.did);
+        }
+        else
+        {
+            self.service.getCharacteristic(Characteristic.On).setValue(state, undefined, self.accessory.context);
+        }
     }.bind(this));
 
     // Brightness
-    this.getBrightness(function(foo, brightness) {
-        self.service.getCharacteristic(Characteristic.Brightness).setValue(brightness, undefined, self.accessory.context);
+    this.getBrightness(function(err, brightness) {
+        if (err)
+        {
+            self.log(`%s [%s] error getting brightness: %s`, this.accessory.displayName, this.dimmer.did,err);
+        }
+        else if (brightness===null)
+        {
+            self.log(`%s [%s] got null brightness`, this.accessory.displayName, this.dimmer.did);
+        }
+        else
+        {
+            self.service.getCharacteristic(Characteristic.Brightness).setValue(brightness, undefined, self.accessory.context);            
+        }
     }.bind(this));
 
 

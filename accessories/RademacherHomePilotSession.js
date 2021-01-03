@@ -44,7 +44,7 @@ RademacherHomePilotSession.prototype.login = function(callback) {
     this.request.post({
         url: this.url + "/authentication/password_salt",
         body: "",
-        timeout: 1500
+        timeout: 5000
     }, function(e, r, b) {
         var error = responseError(e, r);
         if (error) {
@@ -66,7 +66,7 @@ RademacherHomePilotSession.prototype.login = function(callback) {
         self.request.post({
             url: self.url + "/authentication/login",
             body: JSON.stringify(post),
-            timeout: 2500
+            timeout: 5000
         }, function(e, r, b) {
             var error = responseError(e, r);
             if (error) {
@@ -93,7 +93,7 @@ RademacherHomePilotSession.prototype.logout = function(callback) {
     this.request.post({
         url: this.url + "/authentication/logout",
         body: "",
-        timeout: 2000
+        timeout: 5000
     }, function(e, r, b) {
         var error = responseError(e, r);
         if (error) {

@@ -55,8 +55,8 @@ RademacherBlindsAccessory.prototype.setTargetPosition = function(value, callback
     var target = self.inverted ? tools.reversePercentage(value) : value;
 
     var params = {name: "GOTO_POS_CMD", value: target};
-    this.session.put("/devices/"+this.blind.did, params, 2500, function(e) {
-        if(e) return callback(new Error("Request failed: "+e), false);
+    this.session.put("/devices/"+this.blind.did, params, 5000, function(e) {
+        if(e) return callback(new Error("Request failed: "+e), null);
         self.service.setCharacteristic(global.Characteristic.CurrentPosition, self.currentTargetPosition);
         self.lastPosition = self.currentTargetPosition;
         callback(null, self.currentTargetPosition);
@@ -68,7 +68,7 @@ RademacherBlindsAccessory.prototype.getTargetPosition = function(callback) {
     var self = this;
 
     this.getDevice(function(e, d) {
-        if(e) return callback(e, false);
+        if(e) return callback(e, null);
         if (d.hasOwnProperty("statusesMap"))
         {
             var map=d.statusesMap;
@@ -79,7 +79,7 @@ RademacherBlindsAccessory.prototype.getTargetPosition = function(callback) {
         else
         {
             if (self.debug) self.log("%s [%s] - no current target in %o", self.accessory.displayName, self.blind.did,o);
-            callback(null, 0);
+            callback("no current target",null);
         }
     });
 };
@@ -90,7 +90,7 @@ RademacherBlindsAccessory.prototype.getCurrentPosition = function(callback) {
     var self = this;
 
     this.getDevice(function(e, d) {
-        if(e) return callback(e, false);
+        if(e) return callback(e, null);
         if (d.hasOwnProperty("statusesMap"))
         {
             var map=d.statusesMap;
@@ -103,7 +103,7 @@ RademacherBlindsAccessory.prototype.getCurrentPosition = function(callback) {
         else
         {
             if (self.debug) elf.log("%s [%s] - no current position in %o", self.accessory.displayName, self.blind.did,o);
-            callback(null, 0);
+            callback("no current position",null);
         }
     });
 };
@@ -117,7 +117,7 @@ RademacherBlindsAccessory.prototype.getObstructionDetected = function(callback) 
 
     var self = this;
     this.getDevice(function(e, d) {
-        if(e) return callback(e, false);
+        if(e) return callback(e, null);
         if (d.hasOwnProperty("hasErrors"))
         {
             if (self.debug) self.log("%s [%s] - obstruction detected: %s errors", self.accessory.displayName, self.blind.did, d.hasErrors);
@@ -126,7 +126,7 @@ RademacherBlindsAccessory.prototype.getObstructionDetected = function(callback) 
         else
         {
             if (self.debug) self.log("%s [%s] - could not detect obstruction from %o", self.accessory.displayName, self.blind.did,d);
-            callback(null, false);
+            callback(null, null);
         }
     });
 };
@@ -137,10 +137,21 @@ RademacherBlindsAccessory.prototype.update = function() {
     var self = this;
 
     // Switch state
-    this.getCurrentPosition(function(foo, pos) {
-        if (self.debug) self.log(`%s [%s] - updated position to %s`, self.accessory.displayName, self.blind.did, pos);
-        self.service.updateCharacteristic(Characteristic.CurrentPosition, pos);
-        self.service.updateCharacteristic(Characteristic.TargetPosition, pos);
+    this.getCurrentPosition(function(err, pos) {
+        if (err)
+        {
+            self.log(`%s [%s] - error getting position: %s`, self.accessory.displayName, self.blind.did, err);
+        }
+        else if (pos===null)
+        {
+            self.log(`%s [%s] - got null position`, self.accessory.displayName, self.blind.did);
+        }
+        else
+        {
+            if (self.debug) self.log(`%s [%s] - updated position to %s`, self.accessory.displayName, self.blind.did, pos);
+            self.service.updateCharacteristic(Characteristic.CurrentPosition, pos);
+            self.service.updateCharacteristic(Characteristic.TargetPosition, pos);    
+        }
     }.bind(this));
 
 };

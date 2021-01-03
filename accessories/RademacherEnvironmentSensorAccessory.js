@@ -29,8 +29,8 @@ RademacherEnvironmentSensorAccessory.prototype.getCurrentTemperature = function 
 
     var self = this;
     var did = this.did;
-    this.session.get("/v4/devices?devtype=Sensor", 2500, function(e, body) {
-        if(e) return callback(new Error("Request failed: "+e), false);
+    this.session.get("/v4/devices?devtype=Sensor", 5000, function(e, body) {
+        if(e) return callback(new Error("Request failed: "+e), null);
         body.meters.forEach(function(data) {
             if(data.did == did)
             {
@@ -46,8 +46,8 @@ RademacherEnvironmentSensorAccessory.prototype.getCurrentAmbientLightLevel = fun
     this.log("%s [%s] - Getting current ambient light level", this.accessory.displayName, this.sensor.did);
     var self = this;
     var did = this.did;
-    this.session.get("/v4/devices?devtype=Sensor", 2500, function(e, body) {
-        if(e) return callback(new Error("Request failed: "+e), false);
+    this.session.get("/v4/devices?devtype=Sensor", 5000, function(e, body) {
+        if(e) return callback(new Error("Request failed: "+e), null);
         body.meters.forEach(function(data) {
             if(data.did == did)
             {

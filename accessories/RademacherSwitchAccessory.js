@@ -27,7 +27,7 @@ RademacherSwitchAccessory.prototype.getCurrentState = function(callback) {
 
     var self = this;
     this.getDevice(function(e, d) {
-        if(e) return callback(e, false);
+        if(e) return callback(e, null);
         var pos = d?d.statusesMap.Position:0;
         if (self.debug) self.log("%s [%s] - current state: %s", self.accessory.displayName, self.sw.did, pos);
         callback(null, (pos==100?true:false));
@@ -44,7 +44,7 @@ RademacherSwitchAccessory.prototype.setCurrentState = function(value, callback) 
     if (changed)
     {
         var params = {name: this.lastState?"TURN_OFF_CMD":"TURN_ON_CMD"};
-        this.session.put("/devices/"+this.sw.did, params, 2500, function (e) {
+        this.session.put("/devices/"+this.sw.did, params, 5000, function (e) {
             if(e) return callback(new Error("Request failed: "+e), self.currentState);
             self.lastState = self.currentState;
             return callback(null, self.currentState);
@@ -61,9 +61,20 @@ RademacherSwitchAccessory.prototype.update = function() {
     var self = this;
 
     // Switch state
-    this.getCurrentState(function(foo, state) {
-        if (self.debug) self.log(`%s [%s] - updating to %s`, self.accessory.displayName, self.sw.did, state);
-        self.service.getCharacteristic(Characteristic.On).setValue(state, undefined, self.accessory.context);
+    this.getCurrentState(function(err, state) {
+        if (err)  
+        { 
+            self.log(`%s [%s] - error getting state: %s`, self.accessory.displayName, self.sw.did, err);
+        }
+        else if (state===null)
+        {
+            self.log(`%s [%s] - got null state`, self.accessory.displayName, self.sw.did);
+        }
+        else
+        {
+            if (self.debug) self.log(`%s [%s] - updating to %s`, self.accessory.displayName, self.sw.did, state);
+            self.service.getCharacteristic(Characteristic.On).setValue(state, undefined, self.accessory.context);   
+        }
     }.bind(this));
 };
 
