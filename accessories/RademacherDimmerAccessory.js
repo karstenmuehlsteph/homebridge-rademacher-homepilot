@@ -8,9 +8,23 @@ function RademacherDimmerAccessory(log, debug, accessory, dimmer, session) {
     var self = this;
 
     this.dimmer = dimmer;
-    this.lastBrightness = this.dimmer.brightness;
-    this.currentBrightness = 2;
-    this.currentStatus = 100;
+
+    var position=0;
+    if (this.dimmer.hasOwnProperty("statusesMap") && this.dimmer.statusesMap.hasOwnProperty("Position"))
+    {
+        position=this.dimmer.statusesMap.Position;
+    }
+    else
+    {
+        this.log("no position in dimmer object %o", dimmer)
+    }
+
+    if (this.debug) this.log("%s [%s] - initial position: %s", accessory.displayName, dimmer.did,position);
+
+    this.lastBrightness = position;
+    this.currentBrightness = this.lastBrightness;
+    this.currentState = position>0?true:false;
+    this.lastState = this.currentState;
 
     this.service = this.accessory.getService(global.Service.Lightbulb);
 
