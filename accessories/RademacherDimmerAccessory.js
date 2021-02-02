@@ -43,14 +43,15 @@ RademacherDimmerAccessory.prototype.getStatus = function(callback) {
 RademacherDimmerAccessory.prototype.setStatus = function(status, callback, context) {
     if (context) {
         this.on = status;
-        this.log("%s  [%s] - Setting dimmer: %s", this.accessory.displayName, this.dimmer.did, status);
+        if (this.debug) this.log("%s  [%s] - Setting dimmer: %s", this.accessory.displayName, this.dimmer.did, status);
 
         var self = this;
         this.currentState = status;
         var changed = (this.currentState != this.lastState);
-        this.log("%s  [%s] - dimmer changed=%s", this.accessory.displayName,self.dimmer.did,changed);
+        if (this.debug) this.log("%s  [%s] - dimmer changed=%s", this.accessory.displayName,self.dimmer.did,changed);
         if (changed)
         {            
+            this.log("%s  [%s] - dimmer changed from %s to %s", this.accessory.displayName,self.dimmer.did,this.currentState,this.lastState);
             var params = {name: this.lastState?"TURN_OFF_CMD":"TURN_ON_CMD"};
             this.session.put("/devices/"+this.dimmer.did, params, 5000, function(e) {
                 if(e) return callback(new Error("Request failed: "+e), null);
@@ -106,6 +107,7 @@ RademacherDimmerAccessory.prototype.update = function() {
         }
         else
         {
+            if (self.debug) self.log(`%s [%s] - updating state to %s`, self.accessory.displayName, self.dimmer.did, state);
             self.service.getCharacteristic(Characteristic.On).setValue(state, undefined, self.accessory.context);
         }
     }.bind(this));
@@ -122,6 +124,7 @@ RademacherDimmerAccessory.prototype.update = function() {
         }
         else
         {
+            if (self.debug) self.log(`%s [%s] - updating brightness to %s`, self.accessory.displayName, self.dimmer.did, brightness);
             self.service.getCharacteristic(Characteristic.Brightness).setValue(brightness, undefined, self.accessory.context);            
         }
     }.bind(this));
