@@ -8,7 +8,6 @@ function RademacherDimmerAccessory(log, debug, accessory, dimmer, session) {
     var self = this;
 
     this.dimmer = dimmer;
-
     var position=0;
     if (this.dimmer.hasOwnProperty("statusesMap") && this.dimmer.statusesMap.hasOwnProperty("Position"))
     {
@@ -37,7 +36,7 @@ function RademacherDimmerAccessory(log, debug, accessory, dimmer, session) {
         .on('set', this.setBrightness.bind(this));
 
     // TODO configure interval
-    setInterval(this.update.bind(this), 60000);
+    setInterval(this.update.bind(this), 10000);
 }
 
 RademacherDimmerAccessory.prototype = Object.create(RademacherAccessory.prototype);
@@ -50,6 +49,7 @@ RademacherDimmerAccessory.prototype.getStatus = function(callback) {
     this.getDevice(function(e, d) {
         if(e) return callback(e, null);
         var pos = d.statusesMap.Position;
+        if (self.debug) self.log(`%s [%s] - got state brightness %s`, self.accessory.displayName, self.dimmer.did, pos);
         callback(null, (pos>0?true:false));
     });
 };
@@ -65,7 +65,7 @@ RademacherDimmerAccessory.prototype.setStatus = function(status, callback, conte
         if (this.debug) this.log("%s  [%s] - dimmer changed=%s", this.accessory.displayName,self.dimmer.did,changed);
         if (changed)
         {            
-            this.log("%s  [%s] - dimmer changed from %s to %s", this.accessory.displayName,self.dimmer.did,this.currentState,this.lastState);
+            this.log("%s  [%s] - dimmer changed from %s to %s", this.accessory.displayName,self.dimmer.did,this.lastState,this.currentState);
             var params = {name: this.lastState?"TURN_OFF_CMD":"TURN_ON_CMD"};
             this.session.put("/devices/"+this.dimmer.did, params, 5000, function(e) {
                 if(e) return callback(new Error("Request failed: "+e), null);
@@ -87,6 +87,7 @@ RademacherDimmerAccessory.prototype.getBrightness = function(callback) {
     this.getDevice(function(e, d) {
         if(e) return callback(e, null);
         var pos = d.statusesMap.Position;
+        if (self.debug) self.log(`%s [%s] - got brightness %s`, self.accessory.displayName, self.dimmer.did, pos);
         callback(null, pos);
     });
 };
@@ -96,12 +97,22 @@ RademacherDimmerAccessory.prototype.setBrightness = function(brightness, callbac
         if (this.debug) this.log("%s [%s] - Setting target brightness: %s", this.accessory.displayName, this.dimmer.did, brightness);
         var self = this;
         this.currentBrightness = brightness;
-        this.service.setCharacteristic(Characteristic.Brightness,brightness);
-        var params = {name: "GOTO_POS_CMD", value: brightness};
-        this.session.put("/devices/"+this.dimmer.did, params, 5000, function(e) {
-            if(e) return callback(new Error("Request failed: "+e), null);
-            callback(null, self.currentBrightness);
-        });
+        var changed = (this.currentBrightness != this.lastBrightness);
+        if (changed)
+        {
+            this.log("%s  [%s] - dimmer brightness changed from %s to %s", this.accessory.displayName,self.dimmer.did,this.lastBrightness,this.currentBrightness);
+            this.service.setCharacteristic(Characteristic.Brightness,brightness);
+            var params = {name: "GOTO_POS_CMD", value: brightness};
+            this.session.put("/devices/"+this.dimmer.did, params, 5000, function(e) {
+                if(e) return callback(new Error("Request failed: "+e), null);
+                self.lastBrightness = self.currentBrightness;
+                callback(null, self.currentBrightness);
+            });
+        }
+        else
+        {
+            return callback(null, self.currentBrightness);
+        }
 }
 };
 
@@ -124,7 +135,7 @@ RademacherDimmerAccessory.prototype.update = function() {
             if (self.debug) self.log(`%s [%s] - updating state to %s`, self.accessory.displayName, self.dimmer.did, state);
             self.service.getCharacteristic(Characteristic.On).setValue(state, undefined, self.accessory.context);
         }
-    }.bind(this));
+    }.bind(this)); 
 
     // Brightness
     this.getBrightness(function(err, brightness) {
