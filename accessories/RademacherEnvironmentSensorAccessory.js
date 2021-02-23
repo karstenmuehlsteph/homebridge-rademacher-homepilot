@@ -30,7 +30,6 @@ RademacherEnvironmentSensorAccessory.prototype = Object.create(RademacherAccesso
 RademacherEnvironmentSensorAccessory.prototype.getCurrentTemperature = function (callback) {
     this.log("%s [%s] - getCurrentTemperature()", this.accessory.displayName, this.sensor.did);
     callback(null, this.currentTemperature);
-
     var self = this;
     this.session.get("/v4/devices?devtype=Sensor", 30000, function(err, body) {
         if(err) 
@@ -44,7 +43,7 @@ RademacherEnvironmentSensorAccessory.prototype.getCurrentTemperature = function 
                 self.currentTemperature=data.readings.temperature_primary;
                 if (self.debug) self.log("%s [%s] - getCurrentTemperature(): temperature=%s", self.accessory.displayName, self.sensor.did, self.currentTemperature);
                 var temperatureService = self.accessory.getService(global.Service.TemperatureSensor);
-                temperatureService.getCharacteristic(global.Characteristic.CurrentTemperature).updateValue(this.currentTemperature)
+                temperatureService.getCharacteristic(global.Characteristic.CurrentTemperature).updateValue(self.currentTemperature)
             }
         });
     });
@@ -52,7 +51,7 @@ RademacherEnvironmentSensorAccessory.prototype.getCurrentTemperature = function 
 
 RademacherEnvironmentSensorAccessory.prototype.getCurrentAmbientLightLevel = function (callback) {
     this.log("%s [%s] - getCurrentAmbientLightLevel()", this.accessory.displayName, this.sensor.did);
-    callback(null,self.currentAmbientLightLevel);
+    callback(null,this.currentAmbientLightLevel);
     var self = this;
     this.session.get("/v4/devices?devtype=Sensor", 30000, function(err, body) {
         if(err) 
