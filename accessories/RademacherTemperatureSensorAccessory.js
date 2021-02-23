@@ -21,7 +21,7 @@ RademacherTemperatureSensorAccessory.prototype.getCurrentTemperature = function 
     var self = this;
     var did = this.did;
 
-    this.session.get("/v4/devices?devtype=Sensor", 5000, function(e, body) {
+    this.session.get("/v4/devices?devtype=Sensor", 30000, function(e, body) {
         if(e) return callback(new Error("Request failed: "+e), false);
         body.meters.forEach(function(data) {
             if(data.did == did)

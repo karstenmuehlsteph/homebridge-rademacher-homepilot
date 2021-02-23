@@ -79,6 +79,8 @@ function RademacherHomePilot(log, config, api) {
     this.accessories = [];
     this.inverted = true;
 
+    process.env.UV_THREADPOOL_SIZE = 128;
+    
     // HomePilot session
     this.session = new RademacherHomePilotSession(this.log, this.debug, config["url"], config["password"], config["password_hashed"]);
 
@@ -278,11 +280,11 @@ function RademacherHomePilot(log, config, api) {
                     self.log("Login failed: "+e);
                     return;
                 }
-                self.session.get("/v4/devices?devtype=Actuator", 5000, handleActuators);
-                self.session.get("/v4/devices?devtype=Sensor", 5000, handleSensors);
+                self.session.get("/v4/devices?devtype=Actuator", 30000, handleActuators);
+                self.session.get("/v4/devices?devtype=Sensor", 30000, handleSensors);
                 if (config["scenes_as_switch"] && config["scenes_as_switch"]=="true")
                 {
-                    self.session.get("/v4/scenes", 5000, handleScenes);
+                    self.session.get("/v4/scenes", 30000, handleScenes);
                 }
             });
         }.bind(this));

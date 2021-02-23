@@ -1,37 +1,17 @@
-var request = require("request");
-var crypto = require('crypto');
+const crypto = require('crypto');
+const axios = require('axios');
+const axiosCookieJarSupport = require('axios-cookiejar-support').default;
+const tough = require('tough-cookie');
 
 function sha256hex(data) {
     return crypto.createHash('sha256').update(data).digest('hex');
 }
-
-function responseError(e, r) {
-    if (e) {
-        return e;
-    }
-    if (r.statusCode == 200) {
-        return null;
-    }
-    if (r.statusCode == 401) {
-        var error = new Error("Unauthorized. Update the configuration with HomePilot's password.");
-        error.statusCode = r.statusCode;
-        return error;
-    }
-    var error = new Error("Request failed: " + r.statusCode);
-    error.statusCode = r.statusCode;
-    return error;
-}
-
 function RademacherHomePilotSession(log, debug, url, password, password_hashed) {
     this.log = log;
     this.debug = debug;
     this.url = url;
     this.password_hashed ? (password_hashed == "true") : false;
     this.password = password ? (password_hashed?password:sha256hex(password)) : null;
-    this.request = request.defaults({
-        strictSSL: false,
-        jar: true // enable cookie store
-    });
 }
 
 RademacherHomePilotSession.prototype.login = function(callback) {
@@ -40,48 +20,52 @@ RademacherHomePilotSession.prototype.login = function(callback) {
         callback(null);
         return;
     }
-    var self = this;
-    this.request.post({
-        url: this.url + "/authentication/password_salt",
-        body: "",
-        timeout: 5000
-    }, function(e, r, b) {
-        var error = responseError(e, r);
-        if (error) {
-            if (error.statusCode == 500) {
-                // Salt endpoint fails with 500 when password is disabled.
-                self.log("Warning. Password has been configured but does not appear to be enabled on HomePilot.");
-                callback(null);
-                return;
-            }
-            self.log("Login salt error: " + error);
-            callback(error);
-            return;
-        }
-        var salt = JSON.parse(b).password_salt;
-        var post = {
-            password: sha256hex(salt + self.password),
-            password_salt: salt
-        };
-        self.request.post({
-            url: self.url + "/authentication/login",
-            body: JSON.stringify(post),
-            timeout: 5000
-        }, function(e, r, b) {
-            var error = responseError(e, r);
-            if (error) {
-                if (error.statusCode == 500) {
-                    // 500 here when the salt endpoint worked means wrong password.
-                    error = new Error("Wrong password. Make sure the configured HomePilot's password is correct.")
-                }
-                self.log("Login error: " + error);
-                callback(error);
-                return;
-            }
+    var self = this; 
+    axiosCookieJarSupport(axios);
+    this.cookieJar = new tough.CookieJar();
+    axios.post(this.url + "/authentication/password_salt",         
+        "",
+        { 
+            timeout: 30000, 
+            headers: {'content-type' : 'application/json'},
+            withCredentials: true,
+            jar: self.cookieJar,
+        })
+      .then((response) => {
+        const salt = response.data.password_salt;
+        axios.post(this.url + "/authentication/login",         
+            { password: sha256hex(salt + self.password), password_salt: salt },
+            { 
+                timeout: 30000, 
+                headers: {'content-type' : 'application/json'},
+                withCredentials: true,
+                jar: self.cookieJar,
+            })
+        .then((response) => {
             self.log("Successfully logged into HomePilot.");
             callback(null);
+        })  
+        .catch((error) => {
+            if (error.response && error.response.status && error.response.status == 500) {
+                // 500 here when the salt endpoint worked means wrong password.
+                error = new Error("Wrong password. Make sure the configured HomePilot's password is correct.")
+            }
+            self.log("Login error: " + error);
+            callback(error);
+            return;
         });
-    })
+      })  
+      .catch((error) => {
+        if (error.response && error.response.status && error.response.status == 500) {
+            // Salt endpoint fails with 500 when password is disabled.
+            self.log("Warning. Password has been configured but does not appear to be enabled on HomePilot.");
+            callback(null);
+            return;
+        }
+        self.log("Login salt error: " + error);
+        callback(error);
+        return;
+    });
 };
 
 RademacherHomePilotSession.prototype.logout = function(callback) {
@@ -90,70 +74,75 @@ RademacherHomePilotSession.prototype.logout = function(callback) {
         return;
     }
     var self = this;
-    this.request.post({
-        url: this.url + "/authentication/logout",
-        body: "",
-        timeout: 5000
-    }, function(e, r, b) {
-        var error = responseError(e, r);
-        if (error) {
-            if (self.debug) self.log("Logout error: " + error);
-            callback(error);
-        } else {
-            callback(null);
-        }
+    axios.post(this.url + "/authentication/logout",         
+        "",
+        { 
+            timeout: 30000, 
+            headers: {'content-type' : 'application/json'},
+            withCredentials: true,
+            jar: self.cookieJar,
+        })
+      .then((response) => {
+        callback(null);
+      })  
+      .catch((error) => {
+        self.log("Logout error for path %s/authentication/logout: %s",self.url,error);
+        callback(error);
     });
 };
 
 RademacherHomePilotSession.prototype.get = function(path, timeout, callback) {
     var self = this;
-    this.request.get({
-        url: this.url + path,
-        timeout: timeout
-    }, function(e, r, b) {
-        var error = responseError(e, r);
-        if (error) {
-            self.log("GET error for path %s%s: %s",self.url,path,error);
-            callback(error, null);
-        } else {
-            callback(null, JSON.parse(b));
-        }
+    axios.get(this.url + path, 
+        { 
+            timeout: timeout,
+            withCredentials: true, 
+            jar: self.cookieJar,
+        })
+      .then((response) => {
+        callback(null,response.data);
+      })  
+      .catch((error) => {
+        self.log("GET error for path %s%s: %s",self.url,path,error);
+        callback(error, null);
     });
 };
 
 RademacherHomePilotSession.prototype.put = function(path, params, timeout, callback) {
     var self = this;
-    this.request.put({
-        url: this.url + path,
-        headers: {'content-type' : 'application/json'},
-        body: JSON.stringify(params),
-        timeout: timeout
-    }, function(e, r, b) {
-        var error = responseError(e, r);
-        if (error) {
-            self.log("PUT error for path %s%s: %s",self.url,path,error);
-            callback(error);
-        } else {
-            callback(null);
-        }
+    axios.put(this.url + path, 
+        params,
+        { 
+            timeout: timeout, 
+            headers: {'content-type' : 'application/json'},
+            withCredentials: true,
+            jar: self.cookieJar,
+        })
+      .then((response) => {
+        callback(null);
+      })  
+      .catch((error) => {
+        self.log("PUT error for path %s%s: %s",self.url,path,error);
+        callback(error, null);
     });
 };
 
 RademacherHomePilotSession.prototype.post = function(path, params, timeout, callback) {
     var self = this;
-    this.request.post({
-        url: this.url + path,
-        headers: {'content-type' : 'application/json'},
-        body: JSON.stringify(params),
-        timeout: timeout
-    }, function(e, r, b) {
-        var error = responseError(e, r);
-        if (error) {
-            self.log("POST error for path %s%s: %s",self.url,path,error);
-            callback(error);
-        } else {
-            callback(null);
-        }
+    axios.post(this.url + path,         
+        params,
+        { 
+            timeout: timeout, 
+            headers: {'content-type' : 'application/json'},
+            withCredentials: true,
+            jar: self.cookieJar,
+        })
+    .then((response) => {
+        callback(null);
+    })  
+    .catch((error) => {
+        self.log("POST error for path %s%s: %s",self.url,path,error);
+        callback(error);
     });
 };
 

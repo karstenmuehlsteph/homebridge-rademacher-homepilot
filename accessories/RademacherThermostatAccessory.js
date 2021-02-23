@@ -29,7 +29,7 @@ function RademacherThermostatAccessory(log, debug, accessory, thermostat, sessio
         .on('get', this.getCurrentTemperature.bind(this));
 
     this.service.getCharacteristic(global.Characteristic.TargetTemperature)
-        .setValue(self.targetTemperature)
+        .setValue(this.targetTemperature)
         .on('get', this.getTargetTemperature.bind(this))
         .on('set', this.setTargetTemperature.bind(this));
 
@@ -44,92 +44,101 @@ function RademacherThermostatAccessory(log, debug, accessory, thermostat, sessio
 RademacherThermostatAccessory.prototype = Object.create(RademacherAccessory.prototype);
 
 RademacherThermostatAccessory.prototype.getCurrentHeatingCoolingState = function(callback) {
-    if (this.debug) this.log("%s [%s] - getting current state", this.accessory.displayName, this.thermostat.did);
-    if (this.debug) this.log("%s [%s] - current state for %s is %s", this.accessory.displayName, this.thermostat.did, this.currentState);
+    if (this.debug) this.log("%s [%s] - getCurrentHeatingCoolingState()", this.accessory.displayName, this.thermostat.did);
+    if (this.debug) this.log("%s [%s] - getCurrentHeatingCoolingState(): state=%s", this.accessory.displayName, this.thermostat.did, this.currentState);
     callback(null, this.currentState);
 };
 
 RademacherThermostatAccessory.prototype.getCurrentTemperature = function(callback) {
-    if (this.debug) this.log("%s [%s] - getting current temperature", this.accessory.displayName, this.thermostat.did);
+    if (this.debug) this.log("%s [%s] - getCurrentTemperature()", this.accessory.displayName, this.thermostat.did);
+    callback(this.currentTemperature);
     var self = this;
-    this.getDevice(function(e, d) {
-        if(e) return callback(e, false);
-        var pos = d?d.statusesMap.acttemperatur/10:0;
-        if (self.debug) self.log("%s [%s] - current temperature is %d", self.accessory.displayName, self.thermostat.did,pos);
-        callback(null, pos);
+    this.getDevice(function(err, data) {
+        if(err) 
+        {
+            self.log("%s [%s] - getCurrentTemperature(): error=%s", self.accessory.displayName, self.thermostat.did,err);
+            return;
+        }
+        self.currentTemperature = data?data.statusesMap.acttemperatur/10:0;
+        if (self.debug) self.log("%s [%s] -  getCurrentTemperature(): current temperature is %d", self.accessory.displayName, self.thermostat.did,self.currentTemperature);
+        self.service.getCharacteristic(global.Characteristic.CurrentTemperature).updateValue(self.currentTemperature)
     });
 };
 
 RademacherThermostatAccessory.prototype.getTargetTemperature = function(callback) {
-    if (this.debug) this.log("%s [%s] - getting target temperature", this.accessory.displayName, this.thermostat.did);
+    if (this.debug) this.log("%s [%s] - getTargetTemperature()", this.accessory.displayName, this.thermostat.did);
+    callback(null,this.targetTemperature);
     var self = this;
-    this.getDevice(function(e, d) {
-        if(e) return callback(e, false);
-        var pos = d?d.statusesMap.Position/10:0;
-        if (self.debug) self.log("%s [%s] - target temperature is %d", self.accessory.displayName, self.thermostat.did,pos);
-        callback(null, pos);
+    this.getDevice(function(err, data) {
+        if(err) 
+        {
+            self.log("%s [%s] - getTargetTemperature(): error=%s", self.accessory.displayName, self.thermostat.did,err);
+            return;
+        }
+        self.targetTemperature=data?data.statusesMap.Position/10:0;
+        if (self.debug) self.log("%s [%s] - getTargetTemperature(): target temperature is %d", self.accessory.displayName, self.thermostat.did,pos,self.targetTemperature);
+        self.service.getCharacteristic(global.Characteristic.TargetTemperature).updateValue(self.targetTemperature)
     });
 };
 
 RademacherThermostatAccessory.prototype.setTargetTemperature = function(temperature, callback, context) {
-    if (context) {
-        if (this.debug) this.log("%s [%s] - setting target temperature to %d", this.accessory.displayName, this.thermostat.did, temperature);
-        var self = this;
-        this.targetTemperature=temperature;
-
-        var params = {name: "TARGET_TEMPERATURE_CFG", value: this.targetTemperature};
-        this.session.put("/devices/"+this.thermostat.did, params, 5000, function(e) {
-            if(e) return callback(new Error("Request failed: "+e), self.targetTemperature);
-            return callback(null, self.targetTemperature);
-        });
-    }
+    if (this.debug) this.log("%s [%s] - setTargetTemperature(%d)", this.accessory.displayName, this.thermostat.did, temperature);
+    callback(null);
+    var self = this;
+    var params = {name: "TARGET_TEMPERATURE_CFG", value: this.targetTemperature};
+    this.session.put("/devices/"+this.thermostat.did, params, 30000, function(e) {
+        if(err) 
+        {
+            self.log("%s [%s] - setTargetTemperature(): error=%s", self.accessory.displayName, self.thermostat.did,err);
+            return;
+        }
+        self.targetTemperature=temperature;
+        self.service.getCharacteristic(global.Characteristic.TargetTemperature).updateValue(self.targetTemperature)
+    });
 };
 
 RademacherThermostatAccessory.prototype.getTargetHeatingCoolingState = function(callback) {
-    if (this.debug) this.log("%s - Getting target state", this.accessory.displayName);
+    if (this.debug) this.log("%s [%s] - getTargetHeatingCoolingState()", this.accessory.displayName,this.thermostat.did);
     return callback(null, this.currentState);
 };
 
 RademacherThermostatAccessory.prototype.setTargetHeatingCoolingState = function(status, callback, context) {
-    // TODO states needed ?
-    if (context) {
-        if (this.debug) this.log("%s - Setting target state to %d", this.accessory.displayName, status);
-        return callback(null, this.currentState);
-    }
+    if (this.debug) this.log("%s [%s] - setTargetHeatingCoolingState(%s) (ignored)", this.accessory.displayName,this.thermostat.did,state);
+    return callback(null);
 };
 
 RademacherThermostatAccessory.prototype.update = function() {
-    if (this.debug) this.log(`%s [%s] - updating`, this.accessory.displayName, this.thermostat.did);
+    if (this.debug) this.log(`%s [%s] - update()`, this.accessory.displayName, this.thermostat.did);
     var self = this;
 
     // Thermostat
     this.getCurrentTemperature(function(err, temp) {
         if (err)
         {
-            self.log(`%s [%s] - error getting temp: %s`, this.accessory.displayName, this.thermostat.did, err);
+            self.log(`%s [%s] - update().getCurrentTemperature(): error=%s`, this.accessory.displayName, this.thermostat.did, err);
         }
         else if(temp===null)
         {
-            self.log(`%s [%s] - got null temp`, this.accessory.displayName, this.thermostat.did);
+            self.log(`%s [%s] - update().getCurrentTemperature(): got null temp`, this.accessory.displayName, this.thermostat.did);
         }
         else
         {
-            self.service.getCharacteristic(Characteristic.CurrentTemperature).setValue(temp, undefined, self.accessory.context);
+            if (self.debug) self.log(`%s [%s] - update().getCurrentTemperature(): temp=%s`, this.accessory.displayName, this.thermostat.did, temp);
         }
     }.bind(this));
 
     this.getTargetTemperature(function(err, temp) {
         if (err)
         {
-            self.log(`%s [%s] - error getting target temp: %s`, this.accessory.displayName, this.thermostat.did, err);
+            self.log(`%s [%s] - update().getTargetTemperature(): error=%s`, this.accessory.displayName, this.thermostat.did, err);
         }
         else if(temp===null)
         {
-            self.log(`%s [%s] - got null target temp`, this.accessory.displayName, this.thermostat.did);
+            self.log(`%s [%s] - pdate().getTargetTemperature(): got null target temp`, this.accessory.displayName, this.thermostat.did);
         }
         else
         {
-            self.service.getCharacteristic(Characteristic.TargetTemperature).setValue(temp, undefined, self.accessory.context);           
+            if (self.debug) self.log(`%s [%s] - update().getTargetTemperature(): temp=%s`, this.accessory.displayName, this.thermostat.did, temp);
         }
     }.bind(this));
 
