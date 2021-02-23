@@ -7,9 +7,9 @@ function RademacherThermostatAccessory(log, debug, accessory, thermostat, sessio
 
     this.thermostat = thermostat;
     
-    this.currentTemperature = tools.duofernTemp2HomekitTemp(this.thermostat.statusesMap.Position);
+    this.currentTemperature = tools.duofernTemp2HomekitTemp(this.thermostat.statusesMap.acttemperatur);
     this.lastTemperature = this.currentTemperature;
-    this.targetTemperature = this.currentTemperature
+    this.targetTemperature = tools.duofernTemp2HomekitTemp(this.thermostat.statusesMap.Position);
 
     this.currentState = global.Characteristic.CurrentHeatingCoolingState.HEAT;
 
@@ -51,7 +51,7 @@ RademacherThermostatAccessory.prototype.getCurrentHeatingCoolingState = function
 
 RademacherThermostatAccessory.prototype.getCurrentTemperature = function(callback) {
     if (this.debug) this.log("%s [%s] - getCurrentTemperature()", this.accessory.displayName, this.thermostat.did);
-    callback(this.currentTemperature);
+    callback(null,this.currentTemperature);
     var self = this;
     this.getDevice(function(err, data) {
         if(err) 
@@ -59,7 +59,7 @@ RademacherThermostatAccessory.prototype.getCurrentTemperature = function(callbac
             self.log("%s [%s] - getCurrentTemperature(): error=%s", self.accessory.displayName, self.thermostat.did,err);
             return;
         }
-        self.currentTemperature = data?data.statusesMap.acttemperatur/10:0;
+        self.currentTemperature = tools.duofernTemp2HomekitTemp(data.statusesMap.acttemperatur);
         if (self.debug) self.log("%s [%s] -  getCurrentTemperature(): current temperature is %d", self.accessory.displayName, self.thermostat.did,self.currentTemperature);
         self.service.getCharacteristic(global.Characteristic.CurrentTemperature).updateValue(self.currentTemperature)
     });
@@ -75,7 +75,7 @@ RademacherThermostatAccessory.prototype.getTargetTemperature = function(callback
             self.log("%s [%s] - getTargetTemperature(): error=%s", self.accessory.displayName, self.thermostat.did,err);
             return;
         }
-        self.targetTemperature=data?data.statusesMap.Position/10:0;
+        self.targetTemperature=tools.duofernTemp2HomekitTemp(data.statusesMap.Position);
         if (self.debug) self.log("%s [%s] - getTargetTemperature(): target temperature is %d", self.accessory.displayName, self.thermostat.did,pos,self.targetTemperature);
         self.service.getCharacteristic(global.Characteristic.TargetTemperature).updateValue(self.targetTemperature)
     });
