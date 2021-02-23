@@ -52,6 +52,7 @@ RademacherEnvironmentSensorAccessory.prototype.getCurrentTemperature = function 
 
 RademacherEnvironmentSensorAccessory.prototype.getCurrentAmbientLightLevel = function (callback) {
     this.log("%s [%s] - getCurrentAmbientLightLevel()", this.accessory.displayName, this.sensor.did);
+    callback(null,self.currentAmbientLightLevel);
     var self = this;
     this.session.get("/v4/devices?devtype=Sensor", 30000, function(err, body) {
         if(err) 
@@ -67,7 +68,6 @@ RademacherEnvironmentSensorAccessory.prototype.getCurrentAmbientLightLevel = fun
                 var lightService = self.accessory.getService(global.Service.LightSensor);
                 lightService.getCharacteristic(global.Characteristic.CurrentAmbientLightLevel).updateValue(self.currentAmbientLightLevel);                        }
         });
-        if (!found) callback("not found");
     });
 };
 
