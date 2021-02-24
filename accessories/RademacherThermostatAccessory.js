@@ -85,7 +85,7 @@ RademacherThermostatAccessory.prototype.setTargetTemperature = function(temperat
     if (this.debug) this.log("%s [%s] - setTargetTemperature(%d)", this.accessory.displayName, this.thermostat.did, temperature);
     callback(null);
     var self = this;
-    var params = {name: "TARGET_TEMPERATURE_CFG", value: this.targetTemperature};
+    var params = {name: "TARGET_TEMPERATURE_CFG", value: temperature};
     this.session.put("/devices/"+this.thermostat.did, params, 30000, function(err) {
         if(err) 
         {
