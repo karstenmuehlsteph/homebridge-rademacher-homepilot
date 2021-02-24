@@ -52,6 +52,8 @@ RademacherSunSensorAccessory.prototype.getCurrentSunState = function(callback)
 };
 
 RademacherSunSensorAccessory.prototype.update = function() {
+    if (this.debug) this.log(`%s [%s] - update()`, this.accessory.displayName, this.sensor.did);
+    var self = this;
     this.getCurrentSunState(function(err, sun_detected) {
         if (err)
         {
