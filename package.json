@@ -1,7 +1,8 @@
 {
-  "name": "homebridge-rademacher-homepilot-modellbobby",
-  "version": "0.7.15",
-  "description": "rademacher homepilot plugin for homebridge: https://github.com/modellbobby/homebridge-rademacher-homepilot",
+
+  "name": "homebridge-rademacher-homepilot",
+  "version": "0.7.7",
+  "description": "rademacher homepilot plugin for homebridge: https://github.com/bombadiltom/homebridge-rademacher-homepilot",
   "license": "MIT",
   "keywords": [
     "homebridge-plugin"
