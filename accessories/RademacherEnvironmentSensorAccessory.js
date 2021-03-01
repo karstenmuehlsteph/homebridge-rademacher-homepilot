@@ -21,6 +21,21 @@ function RademacherEnvironmentSensorAccessory(log, debug, accessory, sensor, ses
         .setValue(this.currentAmbientLightLevel)
 		.on('get', this.getCurrentAmbientLightLevel.bind(this));
     this.services.push(lightService);
+     // Rain sensor
+    this.currentRainState=this.sensor.readings.rain_detected ? 100000 : 0.0001;
+    var rainSensorService = this.accessory.getService(global.Service.LeakSensor);
+    rainSensorService.getCharacteristic(global.Characteristic.LeakDetected)
+        .setProps({ minValue: 0.0001, maxValue: 100000 })
+        .setValue(this.currentRainState)
+        .on("get", this.getCurrentRainState.bind(this));
+    this.services.push(rainSensorService);
+    // Switch (ambient light level characteristic of light sensor cannot yet be used as trigger in HomeKit)
+    var switchService = this.accessory.getService(global.Service.Switch);
+    switchService.getCharacteristic(global.Characteristic.On)
+        .setValue(this.sensor.readings.rain_detected ? true : false)
+    this.services.push(switchService);
+    
+
     // TODO configure interval
     setInterval(this.update.bind(this), 10000);
 }
@@ -48,6 +63,34 @@ RademacherEnvironmentSensorAccessory.prototype.getCurrentTemperature = function 
         });
     });
 };
+
+RademacherEnvironmentSensorAccessory.prototype.getCurrentRainState = function (callback) {
+    this.log("%s [%s] - getCurrentRainState()", this.accessory.displayName, this.sensor.did);
+    callback(null, this.currentRainState);
+    var self = this;
+    this.session.get("/v4/devices?devtype=Sensor", 30000, function(err, body) {
+        if(err) 
+        {
+            self.log("%s [%s] - getCurrentRainState(): error=%s", self.accessory.displayName, self.sensor.did,err);
+            return;
+        }
+        body.meters.forEach(function(data) {
+            if(data.did == self.sensor.did)
+            {
+                const rain_detected=data.readings.rain_detected
+                self.currentRainState = rain_detected? 100000 : 0.0001;
+                if (self.debug) self.log("%s [%s] - getCurrentRainState(): rain_detected=%s, state=%s", self.accessory.displayName, self.sensor.did, rain_detected,self.currentRainState);
+                // Update RainSensor state
+                var rainSensorService = self.accessory.getService(global.Service.LeakSensor);
+                rainSensorService.getCharacteristic(global.Characteristic.LeakDetected).updateValue(self.currentRainState);
+                // Update Switch state
+                var switchService = self.accessory.getService(global.Service.Switch);
+                switchService.getCharacteristic(global.Characteristic.On).updateValue(rain_detected);
+            }
+        });
+    });
+};
+
 
 RademacherEnvironmentSensorAccessory.prototype.getCurrentAmbientLightLevel = function (callback) {
     this.log("%s [%s] - getCurrentAmbientLightLevel()", this.accessory.displayName, this.sensor.did);
@@ -107,6 +150,22 @@ RademacherEnvironmentSensorAccessory.prototype.update = function() {
             if (self.debug) self.log(`%s [%s] - update().getCurrentAmbientLightLevel(): level=%s`, self.accessory.displayName, self.sensor.did, level);
         }
     }.bind(this));
+    
+    this.getCurrentRaintate(function(err, rain_detected) {
+        if (err)
+        {
+            self.log(`%s [%s] - update().getCurrentRainState(): error=%s`, self.accessory.displayName, self.sensor.did, err);
+        }
+        else if (rain_detected===null)
+        {
+            self.log(`%s [%s] - update().getCurrentRainState(): got null state`, self.accessory.displayName, self.sensor.did);
+        }
+        else
+        {
+            if (self.debug) self.log(`%s [%s] - update().getCurrentRainState(): state=%s`, self.accessory.displayName, self.sensor.did, rain_detected);
+        }
+    }.bind(this));
+    
 
 };
 
