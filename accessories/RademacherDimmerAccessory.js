@@ -95,20 +95,18 @@ RademacherDimmerAccessory.prototype.getBrightness = function(callback) {
 RademacherDimmerAccessory.prototype.setBrightness = function(brightness, callback, context) {
     if (this.debug) this.log("%s [%s] - setBrightness(%s)", this.accessory.displayName, this.dimmer.did, brightness);
     callback(null);
-    if (context) {
-        var self = this;
-        var changed = (brightness != this.lastBrightness);
-        if (changed)
-        {
-            this.log("%s  [%s] - setBrightness(): brightness changed from %s to %s", this.accessory.displayName,self.dimmer.did,this.lastBrightness,brightness);
-            var params = {name: "GOTO_POS_CMD", value: brightness};
-            this.session.put("/devices/"+this.dimmer.did, params, 30000, function(e) {
-                if(e) return callback(new Error("Request failed: "+e), null);
-                self.currentBrightness = brightness;
-                self.lastBrightness = self.currentBrightness;
-                self.service.getCharacteristic(Characteristic.Brightness).updateValue(self.currentBrightness);
-            });
-        }
+    var self = this;
+    var changed = (brightness != this.lastBrightness);
+    if (changed)
+    {
+        this.log("%s  [%s] - setBrightness(): brightness changed from %s to %s", this.accessory.displayName,self.dimmer.did,this.lastBrightness,brightness);
+        var params = {name: "GOTO_POS_CMD", value: brightness};
+        this.session.put("/devices/"+this.dimmer.did, params, 30000, function(e) {
+            if(e) return callback(new Error("Request failed: "+e), null);
+            self.currentBrightness = brightness;
+            self.lastBrightness = self.currentBrightness;
+            self.service.getCharacteristic(Characteristic.Brightness).updateValue(self.currentBrightness);
+        });
     }
 };
 
