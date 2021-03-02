@@ -21,6 +21,15 @@ function RademacherEnvironmentSensorAccessory(log, debug, accessory, sensor, ses
         .setValue(this.currentAmbientLightLevel)
 		.on('get', this.getCurrentAmbientLightLevel.bind(this));
     this.services.push(lightService);
+     // Rain sensor
+    this.currentRainState=this.sensor.readings.rain_detected;
+    var rainsensorService = this.accessory.getService(global.Service.LeakSensor);
+    rainsensorService.getCharacteristic(global.Characteristic.LeakDetected)
+        .setValue(this.currentRainState)
+        .on('get', this.getCurrentRainState.bind(this));
+    this.services.push(rainsensorService);
+    
+
     // TODO configure interval
     setInterval(this.update.bind(this), 10000);
 }
@@ -48,6 +57,30 @@ RademacherEnvironmentSensorAccessory.prototype.getCurrentTemperature = function 
         });
     });
 };
+
+RademacherEnvironmentSensorAccessory.prototype.getCurrentRainState = function (callback) {
+    this.log("%s [%s] - getCurrentRainState()", this.accessory.displayName, this.sensor.did);
+    callback(null, this.currentRainState);
+    var self = this;
+    this.session.get("/v4/devices?devtype=Sensor", 30000, function(err, body) {
+        if(err) 
+        {
+            self.log("%s [%s] - getCurrentRainState(): error=%s", self.accessory.displayName, self.sensor.did,err);
+            return;
+        }
+        body.meters.forEach(function(data) {
+            if(data.did == self.sensor.did)
+            {
+                self.currentRainState=data.readings.rain_detected
+                if (self.debug) self.log("%s [%s] - getCurrentRainState(): rain_detected=%s", self.accessory.displayName, self.sensor.did, self.currentRainState);
+                var rainsensorService = self.accessory.getService(global.Service.LeakSensor);
+                rainsensorService.getCharacteristic(global.Characteristic.LeakDetected).updateValue(self.currentRainState);
+            
+            }
+        });
+    });
+};
+
 
 RademacherEnvironmentSensorAccessory.prototype.getCurrentAmbientLightLevel = function (callback) {
     this.log("%s [%s] - getCurrentAmbientLightLevel()", this.accessory.displayName, this.sensor.did);
@@ -107,6 +140,22 @@ RademacherEnvironmentSensorAccessory.prototype.update = function() {
             if (self.debug) self.log(`%s [%s] - update().getCurrentAmbientLightLevel(): level=%s`, self.accessory.displayName, self.sensor.did, level);
         }
     }.bind(this));
+    
+    this.getCurrentRainState(function(err, rain_detected) {
+        if (err)
+        {
+            self.log(`%s [%s] - update().getCurrentRainState(): error=%s`, self.accessory.displayName, self.sensor.did, err);
+        }
+        else if (rain_detected===null)
+        {
+            self.log(`%s [%s] - update().getCurrentRainState(): got null state`, self.accessory.displayName, self.sensor.did);
+        }
+        else
+        {
+            if (self.debug) self.log(`%s [%s] - update().getCurrentRainState(): state=%s`, self.accessory.displayName, self.sensor.did, rain_detected);
+        }
+    }.bind(this));
+    
 
 };
 

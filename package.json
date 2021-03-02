@@ -1,4 +1,5 @@
 {
+
   "name": "homebridge-rademacher-homepilot",
   "version": "0.7.7",
   "description": "rademacher homepilot plugin for homebridge: https://github.com/bombadiltom/homebridge-rademacher-homepilot",
@@ -8,10 +9,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/bombadiltom/homebridge-rademacher-homepilot.git"
+    "url": "https://github.com/modellbobby/homebridge-rademacher-homepilot.git"
   },
   "bugs": {
-    "url": "http://github.com/bombadiltom/homebridge-rademacher-homepilot/issues"
+    "url": "http://github.com/modellbobby/homebridge-rademacher-homepilot/issues"
   },
   "engines": {
     "node": ">=0.12.0",

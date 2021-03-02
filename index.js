@@ -343,6 +343,8 @@ RademacherHomePilot.prototype.addEnvironmentSensorAccessory = function(accessory
         accessory.addService(global.Service.WindowCovering, name);
         accessory.addService(global.Service.TemperatureSensor, name);
         accessory.addService(global.Service.LightSensor, name);
+        // As of now implementation of Rain Sensor as Leak Sensor
+        accessory.addService(global.Service.LeakSensor, name);
         this.api.registerPlatformAccessories("homebridge-rademacher-homepilot", "RademacherHomePilot", [accessory]);
     }
     else if (accessoryIn instanceof RademacherEnvironmentSensorAccessory)
