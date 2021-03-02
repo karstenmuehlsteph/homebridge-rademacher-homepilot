@@ -340,7 +340,6 @@ RademacherHomePilot.prototype.addEnvironmentSensorAccessory = function(accessory
     {
         this.log("Found environment sensor: new accessory")
         accessory = new global.Accessory(name, UUIDGen.generate("did"+sensor.did));
-        accessory.addService(global.Service.WindowCovering, name);
         accessory.addService(global.Service.TemperatureSensor, name);
         accessory.addService(global.Service.LightSensor, name);
         // As of now implementation of Rain Sensor as Leak Sensor
