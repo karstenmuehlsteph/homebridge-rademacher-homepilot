@@ -158,7 +158,7 @@ function RademacherHomePilot(log, config, api) {
                             }
                         }
                         // enviroment sensor
-                        else if(["32000064","32000064_A","32000064_S"].includes(data.deviceNumber))
+                        else if(["32000064","32000064_A","32000064_S","32004464"].includes(data.deviceNumber))
                         {
                             self.addEnvironmentSensorAccessory(accessory, data);
                         }
