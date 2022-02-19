@@ -37,7 +37,7 @@ RademacherAccessory.prototype.getDevice = function(callback) {
         var self = this;
         this.session.get("/v4/devices/" + this.did, 30000, function(e, body) {
     		if(e) return callback(new Error("Request failed: "+e), null);
-            if (body.hasOwnProperty("device") || body.hasOwnProperty("meter"))
+            if (body && (body.hasOwnProperty("device") || body.hasOwnProperty("meter")))
             {
                 var device = body.hasOwnProperty("device")?body.device:body.meter;
                 self.device = device.data;

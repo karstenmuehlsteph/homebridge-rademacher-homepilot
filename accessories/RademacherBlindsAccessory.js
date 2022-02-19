@@ -68,7 +68,7 @@ RademacherBlindsAccessory.prototype.getTargetPosition = function(callback) {
             self.log("%s [%s] - getTargetPosition(): error=%s", self.accessory.displayName, self.blind.did,err);
             return; 
         }
-        if (data.hasOwnProperty("statusesMap"))
+        if (data && data.hasOwnProperty("statusesMap"))
         {
             var map=data.statusesMap;
             var pos = self.inverted ? tools.reversePercentage(map.Position) : map.Position;
@@ -98,7 +98,7 @@ RademacherBlindsAccessory.prototype.getObstructionDetected = function(callback) 
             self.log(`%s [%s] - getObstructionDetected(): error=%s`, self.accessory.displayName, self.blind.did, err);
             return;
         }
-        if (data.hasOwnProperty("hasErrors"))
+        if (data && data.hasOwnProperty("hasErrors"))
         {
             if (self.debug) self.log("%s [%s] - getObstructionDetected(): hasErrors=%s", self.accessory.displayName, self.blind.did, data.hasErrors);
             self.obstructionDetected=data.hasErrors;
