@@ -74,6 +74,7 @@ RademacherBlindsAccessory.prototype.getTargetPosition = function(callback) {
             var pos = self.inverted ? tools.reversePercentage(map.Position) : map.Position;
             if (self.debug) self.log("%s [%s] - getTargetPosition(): current target=%s", self.accessory.displayName, self.blind.did,pos);
             self.currentTargetPosition = pos;
+            self.lastPosition = self.currentTargetPosition;
             self.service.getCharacteristic(global.Characteristic.TargetPosition).updateValue(self.currentTargetPosition);
             self.service.getCharacteristic(global.Characteristic.CurrentPosition).updateValue(self.currentTargetPosition);
         }
