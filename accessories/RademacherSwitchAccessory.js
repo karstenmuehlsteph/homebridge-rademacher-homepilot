@@ -31,6 +31,7 @@ RademacherSwitchAccessory.prototype.getCurrentState = function(callback) {
         }
         const position=data?data.statusesMap.Position:0;
         self.currentState=position==100?true:false;
+        self.lastState = self.currentState;
         if (self.debug) self.log("%s [%s] - getCurrentState(): position=%s, state=%s", self.accessory.displayName, self.sw.did, position, self.currentState);
         self.service.getCharacteristic(global.Characteristic.On).updateValue(self.currentState);
     });
