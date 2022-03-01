@@ -87,7 +87,7 @@ RademacherDimmerAccessory.prototype.getBrightness = function(callback) {
         var pos = data.statusesMap.Position;
         if (self.debug) self.log(`%s [%s] - getBrightness(): brightness=%s`, self.accessory.displayName, self.dimmer.did, pos);        
         self.currentBrightness=pos;
-        self.lastBirhgtness=self.currentBrightness;
+        self.lastBrightness=self.currentBrightness;
         self.service.getCharacteristic(Characteristic.Brightness).updateValue(self.currentBrightness);
     });
 };
