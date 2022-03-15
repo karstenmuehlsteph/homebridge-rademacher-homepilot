@@ -46,6 +46,7 @@ RademacherHomePilotSession.prototype.login = function(callback) {
             callback(null);
         })  
         .catch((error) => {
+            self.log("Error response: "+JSON.stringify(error.response.data))
             if (error.response && error.response.status && error.response.status == 500) {
                 // 500 here when the salt endpoint worked means wrong password.
                 error = new Error("Wrong password. Make sure the configured HomePilot's password is correct.")

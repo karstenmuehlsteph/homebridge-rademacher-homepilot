@@ -8,4 +8,4 @@ then
 fi
 npm install -g .
 launchctl load ~/Library/LaunchAgents/com.homebridge.server.plist
-tail -f ~/.homebridge/homebridge.log
+tail -f ~/.homebridge/homebridge.log | grep -i rademacher
