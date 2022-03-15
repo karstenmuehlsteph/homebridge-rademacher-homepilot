@@ -30,7 +30,7 @@ Configuration sample:
 
 * `url`: address of HomePilot's web interface in your local network,
 * `password`: password to HomePilot (if enabled in its web interface)
-* `password_hashed`: password to HomePilot is alerady hashed with sha256 (if enabled in its web interface)
+* `password_hashed`: password to HomePilot is already hashed with sha256 (if enabled in its web interface), for hashing https://www.sha-generator.de/ worked for me
 * `scenes_as_switch`: if "true", all scenes are added as switch to HomeKit, otherwise scenes are not added at all 
 * `debug`: if "true", debugging is activated
 * `did_list_usage`: if "include" you can choose what Devices are mirrored to HomeKit, you have to enter matching DIDs below, if "exclude" you can exclude a list of DIDs, default is "none"
