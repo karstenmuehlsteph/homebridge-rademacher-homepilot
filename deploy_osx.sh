@@ -1,11 +1,11 @@
 #!/bin/bash
 CLEANCACHE="$1"
 
-launchctl unload ~/Library/LaunchAgents/com.homebridge.server.plist
+sudo hb-service stop
 if  [ "" != "$CLEANCACHE" ]
 then
     rm -f ~/.homebridge/accessories/cachedAccessories
 fi
 npm install -g .
-launchctl load ~/Library/LaunchAgents/com.homebridge.server.plist
+sudo hb-service start
 tail -f ~/.homebridge/homebridge.log | grep -i rademacher
