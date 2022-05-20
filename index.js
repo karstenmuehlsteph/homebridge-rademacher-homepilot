@@ -208,7 +208,7 @@ function RademacherHomePilot(log, config, api) {
                             self.addEnvironmentSensorAccessory(accessory, data);
                         }
                         // sun sensor
-                        else if(["32000069"].includes(data.deviceNumber))
+                        else if(["32000069","32210069"].includes(data.deviceNumber))
                         {
                             self.addSunSensorAccessory(accessory, data);
                         }
